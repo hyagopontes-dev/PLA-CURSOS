@@ -1,5 +1,4 @@
 'use client'
-import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { formatPrice } from '@/lib/utils'
 
@@ -10,29 +9,25 @@ interface Props {
   isLoggedIn: boolean
 }
 
-export default function BuyButton({ courseId, courseTitle, priceCents, isLoggedIn }: Props) {
+export default function BuyButton({ priceCents, isLoggedIn }: Props) {
   const router = useRouter()
-  const [loading, setLoading] = useState(false)
 
-  async function handleBuy() {
+  function handleClick() {
     if (!isLoggedIn) {
       router.push(`/login?redirect=${window.location.pathname}`)
       return
     }
-    setLoading(true)
-    const res = await fetch('/api/stripe/checkout', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ courseId }),
-    })
-    const data = await res.json()
-    if (data.url) window.location.href = data.url
-    else { alert(data.error ?? 'Erro ao iniciar checkout'); setLoading(false) }
+    alert('Pagamentos em breve! Entre em contato para obter acesso.')
   }
 
   return (
-    <button onClick={handleBuy} disabled={loading} className="btn-primary w-full text-lg">
-      {loading ? 'Redirecionando...' : `Comprar — ${formatPrice(priceCents)}`}
-    </button>
+    <div className="space-y-3">
+      <button onClick={handleClick} className="btn-primary w-full text-lg">
+        {isLoggedIn ? `Comprar — ${formatPrice(priceCents)}` : 'Entrar para comprar'}
+      </button>
+      <p className="text-xs text-center text-gray-400">
+        💳 Pagamentos serão habilitados em breve
+      </p>
+    </div>
   )
 }
