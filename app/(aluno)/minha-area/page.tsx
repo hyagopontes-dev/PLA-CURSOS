@@ -12,7 +12,7 @@ type EnrollmentRow = {
 type ProfileRow = { full_name: string | null }
 
 export default async function MinhaAreaPage() {
-  const supabase = createClient()
+  const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
   const { data: enrollData } = await supabase

@@ -6,7 +6,7 @@ import type { Metadata } from 'next'
 export const metadata: Metadata = { title: 'Catálogo de Cursos' }
 
 export default async function CursosPage() {
-  const supabase = createClient()
+  const supabase = await createClient()
   const { data } = await supabase
     .from('courses')
     .select('*')

@@ -5,7 +5,7 @@ import type { Metadata } from 'next'
 export const metadata: Metadata = { title: 'Admin' }
 
 export default async function AdminPage() {
-  const supabase = createClient()
+  const supabase = await createClient()
 
   const [
     { count: totalStudents },

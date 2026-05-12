@@ -10,7 +10,7 @@ type EnrollmentRow = {
 
 export default async function CertificadoPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
-  const supabase = createClient()
+  const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
   const { data: enrollData } = await supabase

@@ -14,7 +14,7 @@ type CourseDetail = {
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params
-  const supabase = createClient()
+  const supabase = await createClient()
   const { data } = await supabase.from('courses').select('title, description').eq('slug', slug).single()
   const course = data as unknown as { title: string; description: string } | null
   if (!course) return { title: 'Curso não encontrado' }
@@ -23,7 +23,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 
 export default async function CourseLandingPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
-  const supabase = createClient()
+  const supabase = await createClient()
 
   const { data } = await supabase
     .from('courses')

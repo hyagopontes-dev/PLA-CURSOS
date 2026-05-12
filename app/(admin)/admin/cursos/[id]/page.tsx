@@ -8,7 +8,7 @@ export const metadata: Metadata = { title: 'Editar curso — Admin' }
 
 export default async function EditarCursoPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
-  const supabase = createClient()
+  const supabase = await createClient()
   const { data } = await supabase
     .from('courses')
     .select('*, modules(*, lessons(*))')

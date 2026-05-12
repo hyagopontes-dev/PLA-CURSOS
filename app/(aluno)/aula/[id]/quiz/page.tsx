@@ -7,7 +7,7 @@ type LessonRow = { id: string; title: string; quizzes: Quiz[] }
 
 export default async function QuizPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
-  const supabase = createClient()
+  const supabase = await createClient()
 
   const { data } = await supabase
     .from('lessons')

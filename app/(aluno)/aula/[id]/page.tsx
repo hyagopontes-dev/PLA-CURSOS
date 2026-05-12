@@ -18,7 +18,7 @@ type ProgressRow = { id: string; user_id: string; lesson_id: string; completed: 
 
 export default async function AulaPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
-  const supabase = createClient()
+  const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
   const { data: lessonData } = await supabase

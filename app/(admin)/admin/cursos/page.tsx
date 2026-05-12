@@ -13,7 +13,7 @@ type CourseRow = {
 }
 
 export default async function AdminCursosPage() {
-  const supabase = createClient()
+  const supabase = await createClient()
   const { data } = await supabase
     .from('courses')
     .select('id, title, status, price_cents')

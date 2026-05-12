@@ -13,7 +13,7 @@ type EnrollmentRow = {
 }
 
 export default async function AdminAlunosPage() {
-  const supabase = createClient()
+  const supabase = await createClient()
 
   const { data } = await supabase
     .from('enrollments')
