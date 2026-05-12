@@ -5,12 +5,21 @@ import type { Metadata } from 'next'
 
 export const metadata: Metadata = { title: 'Cursos — Admin' }
 
+type CourseRow = {
+  id: string
+  title: string
+  status: string
+  price_cents: number
+}
+
 export default async function AdminCursosPage() {
   const supabase = createClient()
-  const { data: courses } = await supabase
+  const { data } = await supabase
     .from('courses')
-    .select('*')
+    .select('id, title, status, price_cents')
     .order('created_at', { ascending: false })
+
+  const courses = (data ?? []) as unknown as CourseRow[]
 
   return (
     <div>
@@ -29,7 +38,7 @@ export default async function AdminCursosPage() {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
-            {courses?.map(c => (
+            {courses.map(c => (
               <tr key={c.id} className="hover:bg-gray-50">
                 <td className="px-4 py-3 font-medium">{c.title}</td>
                 <td className="px-4 py-3">
@@ -45,7 +54,7 @@ export default async function AdminCursosPage() {
             ))}
           </tbody>
         </table>
-        {!courses?.length && (
+        {courses.length === 0 && (
           <p className="text-center py-10 text-gray-400">Nenhum curso cadastrado.</p>
         )}
       </div>
