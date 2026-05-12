@@ -34,7 +34,7 @@ export default function CourseEditor({ course }: Props) {
   async function saveCourse() {
     setSaving(true)
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await supabase.from('courses').update({ ...form, slug: slugify(form.title) } as any).eq('id', course.id)
+    await (supabase.from('courses') as any).update({ ...form, slug: slugify(form.title) }).eq('id', course.id)
     setSaving(false)
     router.refresh()
   }
@@ -42,7 +42,7 @@ export default function CourseEditor({ course }: Props) {
   async function addModule() {
     if (!newModuleTitle.trim()) return
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data } = await supabase.from('modules').insert({
+    const { data } = await (supabase.from('modules') as any).insert({
       course_id: course.id,
       title: newModuleTitle.trim(),
       order_index: (course.modules?.length ?? 0),
@@ -61,7 +61,7 @@ export default function CourseEditor({ course }: Props) {
     const l = newLesson[moduleId]
     if (!l?.title?.trim()) return
     const moduleData = course.modules?.find(m => m.id === moduleId)
-    await supabase.from('lessons').insert({
+    await (supabase.from('lessons') as any).insert({
       module_id: moduleId,
       title: l.title,
       content_type: (l.content_type || 'video') as 'video' | 'pdf' | 'text',
@@ -70,8 +70,7 @@ export default function CourseEditor({ course }: Props) {
       content_md: l.content_md || null,
       is_preview: l.is_preview ?? false,
       order_index: moduleData?.lessons?.length ?? 0,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } as any)
+    })
     setNewLesson(prev => ({
       ...prev,
       [moduleId]: { title: '', content_type: 'video', video_url: '', pdf_url: '', content_md: '', is_preview: false }
@@ -88,7 +87,7 @@ export default function CourseEditor({ course }: Props) {
   async function togglePublish() {
     const newStatus = form.status === 'published' ? 'draft' : 'published'
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await supabase.from('courses').update({ status: newStatus } as any).eq('id', course.id)
+    await (supabase.from('courses') as any).update({ status: newStatus }).eq('id', course.id)
     set('status', newStatus)
     router.refresh()
   }
