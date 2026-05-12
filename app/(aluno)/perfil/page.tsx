@@ -30,10 +30,9 @@ export default function PerfilPage() {
     e.preventDefault()
     if (!profile) return
     setSaving(true)
-    await supabase
-      .from('profiles')
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      .update({ full_name: name } as any)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    await (supabase.from('profiles') as any)
+      .update({ full_name: name })
       .eq('id', profile.id)
     setSaving(false)
     setSaved(true)
