@@ -3,7 +3,6 @@ import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import type { Metadata } from 'next'
 
-// Isso é permitido
 export const metadata: Metadata = { title: 'Alunos — Admin' }
 
 export default async function AdminAlunosPage() {
@@ -27,7 +26,7 @@ export default async function AdminAlunosPage() {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
-            {(enrollments as any[])?.map((e) => {
+            {(enrollments as unknown as any[])?.map((e) => {
               const profile = e.profiles as unknown as { full_name: string; email: string }
               const course = e.courses as unknown as { title: string }
               return (
