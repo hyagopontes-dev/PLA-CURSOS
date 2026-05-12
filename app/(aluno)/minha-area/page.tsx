@@ -4,18 +4,32 @@ import type { Metadata } from 'next'
 
 export const metadata: Metadata = { title: 'Minha Área' }
 
-export default async function MinhAreaPage() {
-  const supabase = createClient()
+type EnrollmentRow = {
+  id: string
+  courses: { id: string; title: string; thumbnail_url: string | null; slug: string; instructor_name: string } | null
+}
+
+type ProfileRow = { full_name: string | null }
+
+export default async function MinhaAreaPage() {
+  const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  const { data: enrollments } = await supabase
+  const { data: enrollData } = await supabase
     .from('enrollments')
-    .select(`*, courses(*)`)
+    .select('id, courses(id, title, thumbnail_url, slug, instructor_name)')
     .eq('user_id', user!.id)
     .not('paid_at', 'is', null)
     .order('created_at', { ascending: false })
 
-  const { data: profile } = await supabase.from('profiles').select('full_name').eq('id', user!.id).single()
+  const { data: profileData } = await supabase
+    .from('profiles')
+    .select('full_name')
+    .eq('id', user!.id)
+    .single()
+
+  const enrollments = (enrollData ?? []) as unknown as EnrollmentRow[]
+  const profile = profileData as unknown as ProfileRow | null
 
   return (
     <div>
@@ -24,7 +38,7 @@ export default async function MinhAreaPage() {
       </h1>
       <p className="text-gray-500 mb-8">Continue de onde parou.</p>
 
-      {enrollments?.length === 0 && (
+      {enrollments.length === 0 && (
         <div className="card p-10 text-center">
           <div className="text-5xl mb-4">📚</div>
           <h2 className="text-xl font-semibold mb-2">Nenhum curso ainda</h2>
@@ -34,10 +48,7 @@ export default async function MinhAreaPage() {
       )}
 
       <div className="grid md:grid-cols-2 gap-6">
-        {enrollments?.map((e: {
-          id: string
-          courses: { id: string; title: string; thumbnail_url: string | null; slug: string; instructor_name: string } | null
-        }) => (
+        {enrollments.map(e => (
           <div key={e.id} className="card overflow-hidden flex">
             {e.courses?.thumbnail_url && (
               <img src={e.courses.thumbnail_url} alt={e.courses.title} className="w-32 h-32 object-cover" />

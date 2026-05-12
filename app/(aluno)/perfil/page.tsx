@@ -13,17 +13,27 @@ export default function PerfilPage() {
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (!user) return
-      supabase.from('profiles').select('*').eq('id', user.id).single().then(({ data }) => {
-        setProfile(data)
-        setName(data?.full_name ?? '')
-      })
+      supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single()
+        .then(({ data }) => {
+          const p = data as unknown as Profile | null
+          setProfile(p)
+          setName(p?.full_name ?? '')
+        })
     })
   }, [])
 
   async function handleSave(e: React.FormEvent) {
     e.preventDefault()
+    if (!profile) return
     setSaving(true)
-    await supabase.from('profiles').update({ full_name: name }).eq('id', profile!.id)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    await (supabase.from('profiles') as any)
+      .update({ full_name: name })
+      .eq('id', profile.id)
     setSaving(false)
     setSaved(true)
     setTimeout(() => setSaved(false), 3000)

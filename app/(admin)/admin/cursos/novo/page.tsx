@@ -43,14 +43,14 @@ export default function NovoCursoPage() {
       .from('courses')
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       .insert(payload as any)
-      .select()
-      .single()
+      .select('id')
+      .single() as { data: { id: string } | null; error: unknown }
 
     if (error) {
-      setError(error.message)
+      setError((error as { message: string }).message)
       setLoading(false)
     } else {
-      router.push(`/admin/cursos/${data.id}`)
+      router.push(`/admin/cursos/${data!.id}`)
     }
   }
 

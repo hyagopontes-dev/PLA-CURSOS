@@ -7,14 +7,6 @@ const nextConfig = {
       { protocol: 'https', hostname: 'vumbnail.com' },
     ],
   },
-  async headers() {
-    return [
-      {
-        source: '/api/stripe/webhook',
-        headers: [{ key: 'Content-Type', value: 'application/json' }],
-      },
-    ]
-  },
 }
 
 module.exports = nextConfig

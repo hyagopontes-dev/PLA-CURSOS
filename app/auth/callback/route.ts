@@ -7,7 +7,7 @@ export async function GET(request: NextRequest) {
   const redirect = searchParams.get('redirect') ?? '/minha-area'
 
   if (code) {
-    const supabase = createClient()
+    const supabase = await createClient()
     await supabase.auth.exchangeCodeForSession(code)
   }
 

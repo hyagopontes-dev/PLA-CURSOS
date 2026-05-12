@@ -5,19 +5,20 @@ import type { Metadata } from 'next'
 export const metadata: Metadata = { title: 'Admin' }
 
 export default async function AdminPage() {
-  const supabase = createClient()
+  const supabase = await createClient()
 
   const [
     { count: totalStudents },
     { count: totalCourses },
-    { data: payments },
+    { data: paymentsData },
   ] = await Promise.all([
     supabase.from('profiles').select('*', { count: 'exact', head: true }).eq('role', 'student'),
     supabase.from('courses').select('*', { count: 'exact', head: true }),
     supabase.from('payments').select('amount_cents').eq('status', 'paid'),
   ])
 
-  const totalRevenue = payments?.reduce((acc, p) => acc + p.amount_cents, 0) ?? 0
+  const payments = (paymentsData ?? []) as unknown as { amount_cents: number }[]
+  const totalRevenue = payments.reduce((acc, p) => acc + p.amount_cents, 0)
 
   const stats = [
     { label: 'Alunos', value: totalStudents ?? 0 },

@@ -1,10 +1,12 @@
 import StudentSidebar from '@/components/layout/StudentSidebar'
 import { createClient } from '@/lib/supabase/server'
+import { Profile } from '@/types/database'
 
 export default async function AlunoLayout({ children }: { children: React.ReactNode }) {
-  const supabase = createClient()
+  const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  const { data: profile } = await supabase.from('profiles').select('*').eq('id', user!.id).single()
+  const { data } = await supabase.from('profiles').select('*').eq('id', user!.id).single()
+  const profile = data as unknown as Profile | null
 
   return (
     <div className="flex min-h-screen">

@@ -1,19 +1,21 @@
 import { createClient } from '@/lib/supabase/server'
 import CourseCard from '@/components/course/CourseCard'
+import { Course } from '@/types/database'
 import Link from 'next/link'
 
 export default async function HomePage() {
-  const supabase = createClient()
-  const { data: courses } = await supabase
+  const supabase = await createClient()
+  const { data } = await supabase
     .from('courses')
     .select('*')
     .eq('status', 'published')
     .order('created_at', { ascending: false })
     .limit(6)
 
+  const courses = (data ?? []) as unknown as Course[]
+
   return (
     <>
-      {/* Hero */}
       <section className="bg-gradient-to-br from-brand-900 to-brand-600 text-white py-24 px-4">
         <div className="max-w-4xl mx-auto text-center">
           <h1 className="text-5xl font-bold mb-6 leading-tight">
@@ -33,7 +35,6 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* Stats */}
       <section className="py-12 bg-white border-b border-gray-100">
         <div className="max-w-5xl mx-auto px-4 grid grid-cols-3 gap-8 text-center">
           {[
@@ -49,24 +50,20 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* Cursos em destaque */}
       <section className="py-16 px-4">
         <div className="max-w-6xl mx-auto">
           <div className="flex items-center justify-between mb-10">
             <h2 className="text-3xl font-bold">Cursos em destaque</h2>
-            <Link href="/cursos" className="text-brand-600 font-medium hover:underline">
-              Ver todos →
-            </Link>
+            <Link href="/cursos" className="text-brand-600 font-medium hover:underline">Ver todos →</Link>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {(courses ?? []).map(course => (
+            {courses.map(course => (
               <CourseCard key={course.id} course={course} />
             ))}
           </div>
         </div>
       </section>
 
-      {/* CTA final */}
       <section className="py-16 px-4 bg-brand-50">
         <div className="max-w-3xl mx-auto text-center">
           <h2 className="text-3xl font-bold mb-4">Pronto para começar?</h2>

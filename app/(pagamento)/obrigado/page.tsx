@@ -4,18 +4,23 @@ import type { Metadata } from 'next'
 
 export const metadata: Metadata = { title: 'Compra confirmada!' }
 
+type EnrollmentRow = {
+  id: string
+  courses: { title: string; slug: string } | null
+}
+
 export default async function ObrigadoPage() {
-  const supabase = createClient()
+  const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  const { data: enrollments } = await supabase
+  const { data } = await supabase
     .from('enrollments')
-    .select(`*, courses(title, slug)`)
+    .select('id, courses(title, slug)')
     .eq('user_id', user!.id)
     .order('created_at', { ascending: false })
     .limit(1)
 
-  const latest = enrollments?.[0]
+  const latest = ((data ?? []) as unknown as EnrollmentRow[])[0]
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4 bg-gray-50">
@@ -25,12 +30,12 @@ export default async function ObrigadoPage() {
         {latest?.courses && (
           <p className="text-gray-500 mb-8">
             Você agora tem acesso completo ao curso{' '}
-            <strong className="text-gray-800">{(latest.courses as { title: string }).title}</strong>.
+            <strong className="text-gray-800">{latest.courses.title}</strong>.
           </p>
         )}
         <div className="space-y-3">
           {latest?.courses && (
-            <Link href={`/cursos/${(latest.courses as { slug: string }).slug}`} className="btn-primary block">
+            <Link href={`/cursos/${latest.courses.slug}`} className="btn-primary block">
               Começar o curso agora →
             </Link>
           )}

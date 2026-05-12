@@ -16,7 +16,7 @@ type PaymentRow = {
 }
 
 export default async function RelatoriosPage() {
-  const supabase = createClient()
+  const supabase = await createClient()
 
   const { data } = await supabase
     .from('payments')

@@ -10,11 +10,11 @@ export async function middleware(request: NextRequest) {
     {
       cookies: {
         getAll() { return request.cookies.getAll() },
-        setAll(cookiesToSet) {
+        setAll(cookiesToSet: { name: string; value: string; options?: Record<string, unknown> }[]) {
           cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
           supabaseResponse = NextResponse.next({ request })
           cookiesToSet.forEach(({ name, value, options }) =>
-            supabaseResponse.cookies.set(name, value, options)
+            supabaseResponse.cookies.set(name, value, options as Parameters<typeof supabaseResponse.cookies.set>[2])
           )
         },
       },
@@ -24,11 +24,8 @@ export async function middleware(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser()
   const pathname = request.nextUrl.pathname
 
-  // Rotas protegidas para alunos
   const alunoRoutes = ['/minha-area', '/aula', '/certificado', '/perfil', '/obrigado']
   const isAlunoRoute = alunoRoutes.some(r => pathname.startsWith(r))
-
-  // Rotas protegidas para admin
   const isAdminRoute = pathname.startsWith('/admin')
 
   if ((isAlunoRoute || isAdminRoute) && !user) {
@@ -45,7 +42,7 @@ export async function middleware(request: NextRequest) {
       .eq('id', user.id)
       .single()
 
-    if (profile?.role !== 'admin') {
+    if ((profile as unknown as { role: string } | null)?.role !== 'admin') {
       return NextResponse.redirect(new URL('/minha-area', request.url))
     }
   }
