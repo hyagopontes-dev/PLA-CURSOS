@@ -48,7 +48,7 @@ export default function QuizClient({ quizzes, lessonId }: Props) {
 
     const { data: { user } } = await supabase.auth.getUser()
     if (user) {
-      await supabase.from('lesson_progress').upsert(
+      await (supabase.from('lesson_progress') as any).upsert(
         { user_id: user.id, lesson_id: lessonId, completed: true, quiz_score: score },
         { onConflict: 'user_id,lesson_id' }
       )

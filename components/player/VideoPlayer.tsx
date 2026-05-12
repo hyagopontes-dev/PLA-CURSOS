@@ -10,10 +10,10 @@ export default function VideoPlayer({ url, lessonId }: Props) {
   const supabase = createClient()
 
   useEffect(() => {
-    // Marca aula como iniciada
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (!user) return
-      supabase.from('lesson_progress').upsert(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ;(supabase.from('lesson_progress') as any).upsert(
         { user_id: user.id, lesson_id: lessonId, completed: false },
         { onConflict: 'user_id,lesson_id', ignoreDuplicates: true }
       )
@@ -23,7 +23,8 @@ export default function VideoPlayer({ url, lessonId }: Props) {
   async function markComplete() {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return
-    await supabase.from('lesson_progress').upsert(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    await (supabase.from('lesson_progress') as any).upsert(
       { user_id: user.id, lesson_id: lessonId, completed: true },
       { onConflict: 'user_id,lesson_id' }
     )

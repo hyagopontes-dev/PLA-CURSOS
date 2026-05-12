@@ -53,7 +53,7 @@ export default function CourseEditor({ course }: Props) {
 
   async function deleteModule(moduleId: string) {
     if (!confirm('Excluir módulo e todas as suas aulas?')) return
-    await supabase.from('modules').delete().eq('id', moduleId)
+    await (supabase.from('modules') as any).delete().eq('id', moduleId)
     router.refresh()
   }
 
@@ -80,7 +80,7 @@ export default function CourseEditor({ course }: Props) {
 
   async function deleteLesson(lessonId: string) {
     if (!confirm('Excluir esta aula?')) return
-    await supabase.from('lessons').delete().eq('id', lessonId)
+    await (supabase.from('lessons') as any).delete().eq('id', lessonId)
     router.refresh()
   }
 
