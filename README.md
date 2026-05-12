@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # 📚 Plataforma de Cursos
 
 Stack: **Next.js 14** (App Router) + **Supabase** (DB, Auth, Storage) + **Stripe** (pagamentos) + **Vercel** (deploy)
@@ -146,3 +147,6 @@ Depois acesse `/admin` para gerenciar cursos.
 4. Após pagamento → Stripe envia evento `checkout.session.completed`
 5. Webhook em `/api/stripe/webhook` atualiza `payment` para `paid` + cria `enrollment`
 6. Aluno é redirecionado para `/obrigado` com acesso imediato
+=======
+# PLA-CURSOS
+>>>>>>> 7f78e16c04d3cd751145a13084443edd3a49aab0
