@@ -14,7 +14,7 @@ type LessonRow = {
 }
 type ModuleRow = { id: string; title: string; order_index: number; lessons: LessonItemRow[] }
 type LessonItemRow = { id: string; title: string; content_type: string; is_preview: boolean; order_index: number; duration_seconds: number | null }
-type ProgressRow = { lesson_id: string; completed: boolean; watched_seconds: number; quiz_score: number | null; updated_at: string }
+type ProgressRow = { id: string; user_id: string; lesson_id: string; completed: boolean; watched_seconds: number; quiz_score: number | null; updated_at: string }
 
 export default async function AulaPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -55,7 +55,7 @@ export default async function AulaPage({ params }: { params: Promise<{ id: strin
   const allLessonIds = modules.flatMap(m => m.lessons.map(l => l.id))
   const { data: progressData } = await supabase
     .from('lesson_progress')
-    .select('lesson_id, completed, watched_seconds, quiz_score, updated_at')
+    .select('id, user_id, lesson_id, completed, watched_seconds, quiz_score, updated_at')
     .eq('user_id', user!.id)
     .in('lesson_id', allLessonIds)
 
