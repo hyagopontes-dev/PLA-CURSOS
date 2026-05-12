@@ -26,6 +26,13 @@ export function getYoutubeThumbnail(videoId: string) {
   return `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`
 }
 
+export function formatPrice(cents: number, currency = 'BRL') {
+  return new Intl.NumberFormat('pt-BR', {
+    style: 'currency',
+    currency,
+  }).format(cents / 100)
+}
+
 export function slugify(text: string): string {
   return text
     .toLowerCase()

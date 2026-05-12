@@ -9,9 +9,16 @@ export default async function AdminAlunosPage() {
   const supabase = createClient()
   const { data: enrollments } = await supabase
     .from('enrollments')
-    .select(`*, profiles(full_name, email), courses(title)`)
+    .select(`id, paid_at, profiles(full_name, email), courses(title)`)
     .not('paid_at', 'is', null)
     .order('created_at', { ascending: false })
+
+  type EnrollmentRow = {
+    id: string
+    paid_at: string | null
+    profiles: { full_name: string; email: string } | null
+    courses: { title: string } | null
+  }
 
   return (
     <div>
@@ -26,9 +33,9 @@ export default async function AdminAlunosPage() {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
-            {enrollments?.map(e => {
-              const profile = e.profiles as unknown as { full_name: string; email: string }
-              const course = e.courses as unknown as { title: string }
+            {(enrollments as unknown as EnrollmentRow[] ?? []).map(e => {
+              const profile = e.profiles
+              const course = e.courses
               return (
                 <tr key={e.id} className="hover:bg-gray-50">
                   <td className="px-4 py-3 font-medium">{profile?.full_name ?? '—'}</td>
