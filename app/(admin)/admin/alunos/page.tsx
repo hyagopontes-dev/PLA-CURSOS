@@ -4,7 +4,6 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { slugify } from '@/lib/utils'
-import { Button } from '@/components/ui/button'
 
 export default function NovoCursoPage() {
   const router = useRouter()
@@ -24,7 +23,6 @@ export default function NovoCursoPage() {
     setLoading(true)
     setError(null)
 
-    // O "as any" aqui resolve o erro: "Property 'slug' does not exist in type 'never[]'"
     const { data, error: insertError } = await supabase
       .from('courses')
       .insert({
@@ -46,7 +44,7 @@ export default function NovoCursoPage() {
   }
 
   return (
-    <div className="max-w-2xl mx-auto">
+    <div className="max-w-2xl mx-auto p-4">
       <h1 className="text-3xl font-bold mb-8">Novo Curso</h1>
       
       <form onSubmit={handleSubmit} className="space-y-4">
@@ -61,7 +59,7 @@ export default function NovoCursoPage() {
           <input
             type="text"
             required
-            className="w-full p-2 border rounded-md"
+            className="w-full p-2 border rounded-md bg-white text-black"
             value={form.title}
             onChange={e => setForm({ ...form, title: e.target.value })}
           />
@@ -71,7 +69,7 @@ export default function NovoCursoPage() {
           <label className="block text-sm font-medium mb-1">Descrição</label>
           <textarea
             required
-            className="w-full p-2 border rounded-md h-32"
+            className="w-full p-2 border rounded-md h-32 bg-white text-black"
             value={form.description}
             onChange={e => setForm({ ...form, description: e.target.value })}
           />
@@ -84,7 +82,7 @@ export default function NovoCursoPage() {
               type="number"
               required
               step="0.01"
-              className="w-full p-2 border rounded-md"
+              className="w-full p-2 border rounded-md bg-white text-black"
               value={form.price}
               onChange={e => setForm({ ...form, price: e.target.value })}
             />
@@ -93,7 +91,7 @@ export default function NovoCursoPage() {
             <label className="block text-sm font-medium mb-1">URL da Imagem</label>
             <input
               type="text"
-              className="w-full p-2 border rounded-md"
+              className="w-full p-2 border rounded-md bg-white text-black"
               value={form.image_url}
               onChange={e => setForm({ ...form, image_url: e.target.value })}
             />
@@ -101,17 +99,21 @@ export default function NovoCursoPage() {
         </div>
 
         <div className="flex gap-4 pt-4">
-          <Button
+          <button
             type="button"
-            variant="outline"
+            className="px-4 py-2 border rounded-md hover:bg-gray-100 disabled:opacity-50"
             onClick={() => router.back()}
             disabled={loading}
           >
             Cancelar
-          </Button>
-          <Button type="submit" disabled={loading}>
+          </button>
+          <button 
+            type="submit" 
+            className="px-4 py-2 bg-black text-white rounded-md hover:bg-gray-800 disabled:opacity-50"
+            disabled={loading}
+          >
             {loading ? 'Salvando...' : 'Criar Curso'}
-          </Button>
+          </button>
         </div>
       </form>
     </div>
