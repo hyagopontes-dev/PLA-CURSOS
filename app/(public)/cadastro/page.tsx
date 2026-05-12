@@ -1,16 +1,17 @@
 'use client'
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 
 export default function CadastroPage() {
   const supabase = createClient()
+  const router = useRouter()
 
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
-  const [success, setSuccess] = useState(false)
   const [loading, setLoading] = useState(false)
 
   async function handleSignup(e: React.FormEvent) {
@@ -18,40 +19,28 @@ export default function CadastroPage() {
     setLoading(true)
     setError('')
 
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
-      options: {
-        data: { full_name: name },
-        // Garante que o redirect aponta para o domínio correto
-        emailRedirectTo: `${window.location.origin}/auth/callback`,
-      },
+      options: { data: { full_name: name } },
     })
 
     if (error) {
       setError(error.message)
       setLoading(false)
-    } else {
-      setSuccess(true)
+      return
     }
-  }
 
-  if (success) {
-    return (
-      <div className="min-h-screen flex items-center justify-center px-4">
-        <div className="card p-8 w-full max-w-md text-center">
-          <div className="text-5xl mb-4">📧</div>
-          <h1 className="text-2xl font-bold mb-2">Verifique seu e-mail</h1>
-          <p className="text-gray-500 mb-2">
-            Enviamos um link de confirmação para <strong>{email}</strong>.
-          </p>
-          <p className="text-gray-400 text-sm mb-6">
-            Clique no link para ativar sua conta. Verifique também a pasta de spam.
-          </p>
-          <Link href="/login" className="btn-primary inline-block">Ir para o login</Link>
-        </div>
-      </div>
-    )
+    // Se a sessão já foi criada (confirmação desativada no Supabase),
+    // redireciona direto para a área do aluno
+    if (data.session) {
+      router.push('/minha-area')
+      router.refresh()
+      return
+    }
+
+    // Se confirmação de email está ativa, mostra mensagem
+    router.push('/cadastro/confirmacao')
   }
 
   return (
