@@ -42,7 +42,9 @@ export default async function AdminAlunosPage() {
             })}
           </tbody>
         </table>
-        {!enrollments?.length && (
+        
+        {/* CORREÇÃO AQUI: Convertendo para unknown antes de checar o length */}
+        {!(enrollments as unknown as any[])?.length && (
           <p className="text-center py-10 text-gray-400">Nenhum aluno matriculado ainda.</p>
         )}
       </div>
