@@ -1,11 +1,9 @@
 'use client'
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 
 export default function CadastroPage() {
-  const router = useRouter()
   const supabase = createClient()
 
   const [name, setName] = useState('')
@@ -23,7 +21,11 @@ export default function CadastroPage() {
     const { error } = await supabase.auth.signUp({
       email,
       password,
-      options: { data: { full_name: name } },
+      options: {
+        data: { full_name: name },
+        // Garante que o redirect aponta para o domínio correto
+        emailRedirectTo: `${window.location.origin}/auth/callback`,
+      },
     })
 
     if (error) {
@@ -40,8 +42,13 @@ export default function CadastroPage() {
         <div className="card p-8 w-full max-w-md text-center">
           <div className="text-5xl mb-4">📧</div>
           <h1 className="text-2xl font-bold mb-2">Verifique seu e-mail</h1>
-          <p className="text-gray-500">Enviamos um link de confirmação para <strong>{email}</strong>. Clique nele para ativar sua conta.</p>
-          <Link href="/login" className="btn-primary inline-block mt-6">Ir para o login</Link>
+          <p className="text-gray-500 mb-2">
+            Enviamos um link de confirmação para <strong>{email}</strong>.
+          </p>
+          <p className="text-gray-400 text-sm mb-6">
+            Clique no link para ativar sua conta. Verifique também a pasta de spam.
+          </p>
+          <Link href="/login" className="btn-primary inline-block">Ir para o login</Link>
         </div>
       </div>
     )
@@ -64,6 +71,7 @@ export default function CadastroPage() {
           <div>
             <label className="label">Senha</label>
             <input type="password" className="input" value={password} onChange={e => setPassword(e.target.value)} minLength={6} required />
+            <p className="text-xs text-gray-400 mt-1">Mínimo 6 caracteres</p>
           </div>
           <button type="submit" disabled={loading} className="btn-primary w-full">
             {loading ? 'Criando conta...' : 'Criar conta'}
