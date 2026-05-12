@@ -14,6 +14,14 @@ export function formatDuration(seconds: number): string {
   return `${s}s`
 }
 
+// ESTA É A FUNÇÃO QUE ESTAVA FALTANDO
+export function formatPrice(price: number): string {
+  return new Intl.NumberFormat('pt-BR', {
+    style: 'currency',
+    currency: 'BRL',
+  }).format(price)
+}
+
 export function extractVideoId(url: string): { platform: 'youtube' | 'vimeo' | null; id: string | null } {
   const yt = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\n?#]+)/)
   if (yt) return { platform: 'youtube', id: yt[1] }
@@ -30,7 +38,4 @@ export function slugify(text: string): string {
   return text
     .toLowerCase()
     .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/(^-|-$)/g, '')
-}
+    .replace(/[\u
