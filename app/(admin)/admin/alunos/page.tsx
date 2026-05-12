@@ -5,20 +5,23 @@ import type { Metadata } from 'next'
 
 export const metadata: Metadata = { title: 'Alunos — Admin' }
 
+type EnrollmentRow = {
+  id: string
+  paid_at: string | null
+  profiles: { full_name: string | null; email: string } | null
+  courses: { title: string } | null
+}
+
 export default async function AdminAlunosPage() {
   const supabase = createClient()
-  const { data: enrollments } = await supabase
+
+  const { data } = await supabase
     .from('enrollments')
     .select(`id, paid_at, profiles(full_name, email), courses(title)`)
     .not('paid_at', 'is', null)
     .order('created_at', { ascending: false })
 
-  type EnrollmentRow = {
-    id: string
-    paid_at: string | null
-    profiles: { full_name: string; email: string } | null
-    courses: { title: string } | null
-  }
+  const enrollments = (data ?? []) as unknown as EnrollmentRow[]
 
   return (
     <div>
@@ -33,23 +36,19 @@ export default async function AdminAlunosPage() {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
-            {(enrollments as unknown as EnrollmentRow[] ?? []).map(e => {
-              const profile = e.profiles
-              const course = e.courses
-              return (
-                <tr key={e.id} className="hover:bg-gray-50">
-                  <td className="px-4 py-3 font-medium">{profile?.full_name ?? '—'}</td>
-                  <td className="px-4 py-3 text-gray-500">{profile?.email}</td>
-                  <td className="px-4 py-3">{course?.title}</td>
-                  <td className="px-4 py-3 text-gray-400">
-                    {e.paid_at ? format(new Date(e.paid_at), 'dd/MM/yyyy', { locale: ptBR }) : '—'}
-                  </td>
-                </tr>
-              )
-            })}
+            {enrollments.map(e => (
+              <tr key={e.id} className="hover:bg-gray-50">
+                <td className="px-4 py-3 font-medium">{e.profiles?.full_name ?? '—'}</td>
+                <td className="px-4 py-3 text-gray-500">{e.profiles?.email ?? '—'}</td>
+                <td className="px-4 py-3">{e.courses?.title ?? '—'}</td>
+                <td className="px-4 py-3 text-gray-400">
+                  {e.paid_at ? format(new Date(e.paid_at), 'dd/MM/yyyy', { locale: ptBR }) : '—'}
+                </td>
+              </tr>
+            ))}
           </tbody>
         </table>
-        {!enrollments?.length && (
+        {enrollments.length === 0 && (
           <p className="text-center py-10 text-gray-400">Nenhum aluno matriculado ainda.</p>
         )}
       </div>

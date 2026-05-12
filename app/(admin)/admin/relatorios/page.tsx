@@ -6,21 +6,33 @@ import type { Metadata } from 'next'
 
 export const metadata: Metadata = { title: 'Relatórios — Admin' }
 
+type PaymentRow = {
+  id: string
+  course_id: string
+  amount_cents: number
+  created_at: string
+  profiles: { full_name: string | null; email: string } | null
+  courses: { title: string } | null
+}
+
 export default async function RelatoriosPage() {
   const supabase = createClient()
 
-  const { data: payments } = await supabase
+  const { data } = await supabase
     .from('payments')
-    .select(`*, profiles(full_name, email), courses(title)`)
+    .select(`id, course_id, amount_cents, created_at, profiles(full_name, email), courses(title)`)
     .eq('status', 'paid')
     .order('created_at', { ascending: false })
 
-  const totalRevenue = payments?.reduce((acc, p) => acc + p.amount_cents, 0) ?? 0
+  const payments = (data ?? []) as unknown as PaymentRow[]
+
+  const totalRevenue = payments.reduce((acc, p) => acc + p.amount_cents, 0)
 
   const byCourse: Record<string, { title: string; count: number; revenue: number }> = {}
-  payments?.forEach(p => {
-    const course = p.courses as unknown as { title: string }
-    if (!byCourse[p.course_id]) byCourse[p.course_id] = { title: course?.title ?? '—', count: 0, revenue: 0 }
+  payments.forEach(p => {
+    if (!byCourse[p.course_id]) {
+      byCourse[p.course_id] = { title: p.courses?.title ?? '—', count: 0, revenue: 0 }
+    }
     byCourse[p.course_id].count += 1
     byCourse[p.course_id].revenue += p.amount_cents
   })
@@ -29,7 +41,7 @@ export default async function RelatoriosPage() {
     <div className="space-y-8">
       <h1 className="text-3xl font-bold">Relatórios</h1>
 
-      {/* Receita total */}
+      {/* Resumo */}
       <div className="grid grid-cols-3 gap-4">
         <div className="card p-5">
           <p className="text-sm text-gray-500 mb-1">Receita total</p>
@@ -37,11 +49,13 @@ export default async function RelatoriosPage() {
         </div>
         <div className="card p-5">
           <p className="text-sm text-gray-500 mb-1">Vendas realizadas</p>
-          <p className="text-2xl font-bold">{payments?.length ?? 0}</p>
+          <p className="text-2xl font-bold">{payments.length}</p>
         </div>
         <div className="card p-5">
           <p className="text-sm text-gray-500 mb-1">Ticket médio</p>
-          <p className="text-2xl font-bold">{formatPrice(payments?.length ? Math.round(totalRevenue / payments.length) : 0)}</p>
+          <p className="text-2xl font-bold">
+            {formatPrice(payments.length ? Math.round(totalRevenue / payments.length) : 0)}
+          </p>
         </div>
       </div>
 
@@ -60,7 +74,7 @@ export default async function RelatoriosPage() {
             {Object.values(byCourse)
               .sort((a, b) => b.revenue - a.revenue)
               .map(c => (
-                <tr key={c.title} className="hover:bg-gray-50">
+                <tr key={c.title}>
                   <td className="px-4 py-3 font-medium">{c.title}</td>
                   <td className="px-4 py-3">{c.count}</td>
                   <td className="px-4 py-3 text-brand-600 font-medium">{formatPrice(c.revenue)}</td>
@@ -82,25 +96,24 @@ export default async function RelatoriosPage() {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
-            {payments?.slice(0, 20).map(p => {
-              const profile = p.profiles as unknown as { full_name: string; email: string }
-              const course = p.courses as unknown as { title: string }
-              return (
-                <tr key={p.id} className="hover:bg-gray-50">
-                  <td className="px-4 py-3">
-                    <p className="font-medium">{profile?.full_name ?? '—'}</p>
-                    <p className="text-gray-400 text-xs">{profile?.email}</p>
-                  </td>
-                  <td className="px-4 py-3">{course?.title}</td>
-                  <td className="px-4 py-3 font-medium text-brand-600">{formatPrice(p.amount_cents)}</td>
-                  <td className="px-4 py-3 text-gray-400">
-                    {format(new Date(p.created_at), 'dd/MM/yyyy HH:mm', { locale: ptBR })}
-                  </td>
-                </tr>
-              )
-            })}
+            {payments.slice(0, 20).map(p => (
+              <tr key={p.id} className="hover:bg-gray-50">
+                <td className="px-4 py-3">
+                  <p className="font-medium">{p.profiles?.full_name ?? '—'}</p>
+                  <p className="text-gray-400 text-xs">{p.profiles?.email ?? ''}</p>
+                </td>
+                <td className="px-4 py-3">{p.courses?.title ?? '—'}</td>
+                <td className="px-4 py-3 font-medium text-brand-600">{formatPrice(p.amount_cents)}</td>
+                <td className="px-4 py-3 text-gray-400">
+                  {format(new Date(p.created_at), 'dd/MM/yyyy HH:mm', { locale: ptBR })}
+                </td>
+              </tr>
+            ))}
           </tbody>
         </table>
+        {payments.length === 0 && (
+          <p className="text-center py-10 text-gray-400">Nenhuma venda ainda.</p>
+        )}
       </div>
     </div>
   )
