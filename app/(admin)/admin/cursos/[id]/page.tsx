@@ -3,16 +3,15 @@ import { notFound } from 'next/navigation'
 import CourseEditor from '@/components/admin/CourseEditor'
 import type { Metadata } from 'next'
 
-interface Props { params: { id: string } }
-
 export const metadata: Metadata = { title: 'Editar curso — Admin' }
 
-export default async function EditarCursoPage({ params }: Props) {
+export default async function EditarCursoPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
   const supabase = createClient()
   const { data: course } = await supabase
     .from('courses')
     .select(`*, modules(*, lessons(*))`)
-    .eq('id', params.id)
+    .eq('id', id)
     .single()
 
   if (!course) notFound()

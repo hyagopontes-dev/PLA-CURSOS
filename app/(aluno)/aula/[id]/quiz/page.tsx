@@ -2,15 +2,14 @@ import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
 import QuizClient from '@/components/quiz/QuizClient'
 
-interface Props { params: { id: string } }
-
-export default async function QuizPage({ params }: Props) {
+export default async function QuizPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
   const supabase = createClient()
 
   const { data: lesson } = await supabase
     .from('lessons')
     .select(`*, quizzes(*), modules(courses(*))`)
-    .eq('id', params.id)
+    .eq('id', id)
     .single()
 
   if (!lesson || !lesson.quizzes?.length) notFound()

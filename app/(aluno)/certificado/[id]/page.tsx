@@ -2,22 +2,20 @@ import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
 import CertificateView from '@/components/course/CertificateView'
 
-interface Props { params: { id: string } }
-
-export default async function CertificadoPage({ params }: Props) {
+export default async function CertificadoPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
   const supabase = createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
   const { data: enrollment } = await supabase
     .from('enrollments')
     .select(`*, courses(*), profiles(*)`)
-    .eq('id', params.id)
+    .eq('id', id)
     .eq('user_id', user!.id)
     .single()
 
   if (!enrollment) notFound()
 
-  // Verifica se completou todas as aulas
   const { data: lessons } = await supabase
     .from('lessons')
     .select('id, modules!inner(course_id)')
