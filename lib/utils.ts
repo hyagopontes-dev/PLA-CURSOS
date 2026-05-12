@@ -5,6 +5,13 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
+export function formatPrice(price: number): string {
+  return new Intl.NumberFormat('pt-BR', {
+    style: 'currency',
+    currency: 'BRL',
+  }).format(price)
+}
+
 export function formatDuration(seconds: number): string {
   const h = Math.floor(seconds / 3600)
   const m = Math.floor((seconds % 3600) / 60)
@@ -12,14 +19,6 @@ export function formatDuration(seconds: number): string {
   if (h > 0) return `${h}h ${m}m`
   if (m > 0) return `${m}m ${s}s`
   return `${s}s`
-}
-
-// ESTA É A FUNÇÃO QUE ESTAVA FALTANDO
-export function formatPrice(price: number): string {
-  return new Intl.NumberFormat('pt-BR', {
-    style: 'currency',
-    currency: 'BRL',
-  }).format(price)
 }
 
 export function extractVideoId(url: string): { platform: 'youtube' | 'vimeo' | null; id: string | null } {
@@ -38,4 +37,7 @@ export function slugify(text: string): string {
   return text
     .toLowerCase()
     .normalize('NFD')
-    .replace(/[\u
+    .replace(/[\u0300-\u036f]/g, '') // Remove acentos
+    .replace(/[^a-z0-9]+/g, '-')     // Substitui caracteres especiais por hífens
+    .replace(/(^-|-$)/g, '')         // Remove hífens no início ou fim
+}
