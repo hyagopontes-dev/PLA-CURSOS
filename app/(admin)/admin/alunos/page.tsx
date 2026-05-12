@@ -1,53 +1,119 @@
-import { createClient } from '@/lib/supabase/server'
-import { format } from 'date-fns'
-import { ptBR } from 'date-fns/locale'
-import type { Metadata } from 'next'
+'use client'
 
-export const metadata: Metadata = { title: 'Alunos — Admin' }
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { createClient } from '@/lib/supabase/client'
+import { slugify } from '@/lib/utils'
+import { Button } from '@/components/ui/button'
 
-export default async function AdminAlunosPage() {
+export default function NovoCursoPage() {
+  const router = useRouter()
   const supabase = createClient()
-  const { data: enrollments } = await supabase
-    .from('enrollments')
-    .select(`*, profiles(full_name, email), courses(title)`)
-    .not('paid_at', 'is', null)
-    .order('created_at', { ascending: false })
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  
+  const [form, setForm] = useState({
+    title: '',
+    description: '',
+    price: '',
+    image_url: '',
+  })
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    setLoading(true)
+    setError(null)
+
+    // O "as any" aqui resolve o erro: "Property 'slug' does not exist in type 'never[]'"
+    const { data, error: insertError } = await supabase
+      .from('courses')
+      .insert({
+        ...form,
+        price: Number(form.price),
+        slug: slugify(form.title),
+      } as any) 
+      .select()
+      .single()
+
+    if (insertError) {
+      setError(insertError.message)
+      setLoading(false)
+      return
+    }
+
+    router.push('/admin/cursos')
+    router.refresh()
+  }
 
   return (
-    <div>
-      <h1 className="text-3xl font-bold mb-8">Alunos</h1>
-      <div className="card overflow-hidden">
-        <table className="w-full text-sm">
-          <thead className="bg-gray-50 border-b border-gray-200">
-            <tr>
-              {['Aluno', 'E-mail', 'Curso', 'Data'].map(h => (
-                <th key={h} className="text-left px-4 py-3 text-gray-500 font-medium">{h}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-100">
-            {(enrollments as unknown as any[])?.map((e) => {
-              const profile = e.profiles as unknown as { full_name: string; email: string }
-              const course = e.courses as unknown as { title: string }
-              return (
-                <tr key={e.id} className="hover:bg-gray-50">
-                  <td className="px-4 py-3 font-medium">{profile?.full_name ?? '—'}</td>
-                  <td className="px-4 py-3 text-gray-500">{profile?.email}</td>
-                  <td className="px-4 py-3">{course?.title}</td>
-                  <td className="px-4 py-3 text-gray-400">
-                    {e.paid_at ? format(new Date(e.paid_at), 'dd/MM/yyyy', { locale: ptBR }) : '—'}
-                  </td>
-                </tr>
-              )
-            })}
-          </tbody>
-        </table>
-        
-        {/* CORREÇÃO AQUI: Convertendo para unknown antes de checar o length */}
-        {!(enrollments as unknown as any[])?.length && (
-          <p className="text-center py-10 text-gray-400">Nenhum aluno matriculado ainda.</p>
+    <div className="max-w-2xl mx-auto">
+      <h1 className="text-3xl font-bold mb-8">Novo Curso</h1>
+      
+      <form onSubmit={handleSubmit} className="space-y-4">
+        {error && (
+          <div className="bg-red-50 text-red-500 p-4 rounded-md mb-4">
+            {error}
+          </div>
         )}
-      </div>
+
+        <div>
+          <label className="block text-sm font-medium mb-1">Título do Curso</label>
+          <input
+            type="text"
+            required
+            className="w-full p-2 border rounded-md"
+            value={form.title}
+            onChange={e => setForm({ ...form, title: e.target.value })}
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium mb-1">Descrição</label>
+          <textarea
+            required
+            className="w-full p-2 border rounded-md h-32"
+            value={form.description}
+            onChange={e => setForm({ ...form, description: e.target.value })}
+          />
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium mb-1">Preço (R$)</label>
+            <input
+              type="number"
+              required
+              step="0.01"
+              className="w-full p-2 border rounded-md"
+              value={form.price}
+              onChange={e => setForm({ ...form, price: e.target.value })}
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">URL da Imagem</label>
+            <input
+              type="text"
+              className="w-full p-2 border rounded-md"
+              value={form.image_url}
+              onChange={e => setForm({ ...form, image_url: e.target.value })}
+            />
+          </div>
+        </div>
+
+        <div className="flex gap-4 pt-4">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => router.back()}
+            disabled={loading}
+          >
+            Cancelar
+          </Button>
+          <Button type="submit" disabled={loading}>
+            {loading ? 'Salvando...' : 'Criar Curso'}
+          </Button>
+        </div>
+      </form>
     </div>
   )
 }
