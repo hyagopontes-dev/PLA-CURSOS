@@ -1,44 +1,52 @@
-import { clsx, type ClassValue } from 'clsx'
-import { twMerge } from 'tailwind-merge'
+import { createClient } from '@/lib/supabase/server'
+import { format } from 'date-fns'
+import { ptBR } from 'date-fns/locale'
+import type { Metadata } from 'next'
 
-export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs))
-}
+// Isso é permitido
+export const metadata: Metadata = { title: 'Alunos — Admin' }
 
-// Esta é a função que o seu componente BuyButton.tsx está tentando importar
-export function formatPrice(price: number): string {
-  return new Intl.NumberFormat('pt-BR', {
-    style: 'currency',
-    currency: 'BRL',
-  }).format(price)
-}
+export default async function AdminAlunosPage() {
+  const supabase = createClient()
+  const { data: enrollments } = await supabase
+    .from('enrollments')
+    .select(`*, profiles(full_name, email), courses(title)`)
+    .not('paid_at', 'is', null)
+    .order('created_at', { ascending: false })
 
-export function formatDuration(seconds: number): string {
-  const h = Math.floor(seconds / 3600)
-  const m = Math.floor((seconds % 3600) / 60)
-  const s = seconds % 60
-  if (h > 0) return `${h}h ${m}m`
-  if (m > 0) return `${m}m ${s}s`
-  return `${s}s`
-}
-
-export function extractVideoId(url: string): { platform: 'youtube' | 'vimeo' | null; id: string | null } {
-  const yt = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\n?#]+)/)
-  if (yt) return { platform: 'youtube', id: yt[1] }
-  const vm = url.match(/vimeo\.com\/(\d+)/)
-  if (vm) return { platform: 'vimeo', id: vm[1] }
-  return { platform: null, id: null }
-}
-
-export function getYoutubeThumbnail(videoId: string) {
-  return `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`
-}
-
-export function slugify(text: string): string {
-  return text
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/(^-|-$)/g, '')
+  return (
+    <div>
+      <h1 className="text-3xl font-bold mb-8">Alunos</h1>
+      <div className="card overflow-hidden">
+        <table className="w-full text-sm">
+          <thead className="bg-gray-50 border-b border-gray-200">
+            <tr>
+              {['Aluno', 'E-mail', 'Curso', 'Data'].map(h => (
+                <th key={h} className="text-left px-4 py-3 text-gray-500 font-medium">{h}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-100">
+            {(enrollments as any[])?.map((e) => {
+              const profile = e.profiles as unknown as { full_name: string; email: string }
+              const course = e.courses as unknown as { title: string }
+              return (
+                <tr key={e.id} className="hover:bg-gray-50">
+                  <td className="px-4 py-3 font-medium">{profile?.full_name ?? '—'}</td>
+                  <td className="px-4 py-3 text-gray-500">{profile?.email}</td>
+                  <td className="px-4 py-3">{course?.title}</td>
+                  <td className="px-4 py-3 text-gray-400">
+                    {e.paid_at ? format(new Date(e.paid_at), 'dd/MM/yyyy', { locale: ptBR }) : '—'}
+                  </td>
+                </tr>
+              )
+            })}
+          </tbody>
+        </table>
+        {!enrollments?.length && (
+          <p className="text-center py-10 text-gray-400">Nenhum aluno matriculado ainda.</p>
+        )}
+      </div>
+    </div>
+  )
 }
