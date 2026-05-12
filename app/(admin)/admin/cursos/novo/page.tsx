@@ -10,8 +10,13 @@ export default function NovoCursoPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [form, setForm] = useState({
-    title: '', description: '', instructor_name: '', instructor_bio: '',
-    price_cents: 0, status: 'draft' as 'draft' | 'published', thumbnail_url: '',
+    title: '',
+    description: '',
+    instructor_name: '',
+    instructor_bio: '',
+    price_cents: 0,
+    status: 'draft' as 'draft' | 'published',
+    thumbnail_url: '',
   })
 
   function set(field: string, value: unknown) {
@@ -22,13 +27,31 @@ export default function NovoCursoPage() {
     e.preventDefault()
     setLoading(true)
     setError('')
-    const { data, error } = await supabase.from('courses').insert({
-      ...form,
-      slug: slugify(form.title),
-    }).select().single()
 
-    if (error) { setError(error.message); setLoading(false) }
-    else router.push(`/admin/cursos/${data.id}`)
+    const payload = {
+      title: form.title,
+      description: form.description,
+      instructor_name: form.instructor_name,
+      instructor_bio: form.instructor_bio || null,
+      price_cents: form.price_cents,
+      status: form.status,
+      thumbnail_url: form.thumbnail_url || null,
+      slug: slugify(form.title),
+    }
+
+    const { data, error } = await supabase
+      .from('courses')
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      .insert(payload as any)
+      .select()
+      .single()
+
+    if (error) {
+      setError(error.message)
+      setLoading(false)
+    } else {
+      router.push(`/admin/cursos/${data.id}`)
+    }
   }
 
   return (
@@ -73,7 +96,9 @@ export default function NovoCursoPage() {
           </select>
         </div>
         <div className="flex gap-3 pt-2">
-          <button type="submit" disabled={loading} className="btn-primary">{loading ? 'Salvando...' : 'Criar curso'}</button>
+          <button type="submit" disabled={loading} className="btn-primary">
+            {loading ? 'Salvando...' : 'Criar curso'}
+          </button>
           <button type="button" onClick={() => router.back()} className="btn-secondary">Cancelar</button>
         </div>
       </form>
